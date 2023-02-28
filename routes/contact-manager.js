@@ -9,23 +9,15 @@ router.use(bodyParser.json())
 
 router.post("/", async(req,res)=>{
     console.log(req.body);
+    const {firstName, lastName, email, phone } = req.body
     try{
-        const {firstName, lastName, email, phone } = req.body
-        if(firstName && lastName && email && phone){
             const data = await contact.create({firstName, lastName, email, phone })
             return res.status(201).json({
                 status: "Success",
                 data
             })
-        }
-        else{
-            return res.status(400).json({
-                message: "all fields required"
-            })
-        }
     } catch(e){
-        res.status(400).json({
-            status: "failed",
+        return res.status(400).json({
             message : e.message
         })
     }
@@ -107,6 +99,28 @@ router.put("/:id", async(req,res)=>{
     } catch(e){
         res.status(404).json({
             message : e.message
+        })
+    }
+})
+
+router.patch("/:id", async(req, res)=>{
+    const {firstName, lastName, email, phone} = req.body
+    const data = await contact.find({_id:req.params.id})
+    if(data.length){
+        try{
+            const updatePartial = await contact.updateOne({_id:req.params.id}, {$set: {firstName, lastName, email, phone}})
+            return res.status(204).json({
+                data
+            })
+        } catch(e){
+            return res.status(404).json({
+                error : e.message
+            })
+        }
+    }
+    else{
+        return res.status(404).json({
+            error : "There is no contact with that id"
         })
     }
 })
